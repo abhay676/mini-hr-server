@@ -1,0 +1,37 @@
+{
+  "DashboardStaticData": [
+    {
+      "heading": "Create Job Opening",
+      "icon": "<ScheduleOutlined style={{ fontSize: '50px' }} />",
+      "features": [
+        "Create opening and publish it",
+        "Post on various job boards",
+        "Share on social networks"
+      ],
+      "buttonText": "CREATE JOB OPENING",
+      "route": "/job/new"
+    },
+    {
+      "heading": "Add Candidates",
+      "icon": "<UserAddOutlined style={{ fontSize: '50px' }} />",
+      "features": [
+        "Upload candidates resumes",
+        "Move them to job openings",
+        "Search & manage candidates"
+      ],
+      "buttonText": "ADD CANDIDATE",
+      "route": "/candidate/new"
+    },
+    {
+      "heading": "Invite Team Members",
+      "icon": "<UsergroupAddOutlined style={{ fontSize: '50px' }} />",
+      "features": [
+        "Invite co-recruiters",
+        "Invite Interviewers",
+        "Collaborate to recruit"
+      ],
+      "buttonText": "INVITE TEAM MEMBERS",
+      "route": "/team/invite"
+    }
+  ]
+}
