@@ -25,6 +25,7 @@
     "nodemailer": "^6.6.3",
     "otp-generator": "^2.0.1",
     "pg": "^8.6.0",
+    "redis": "^3.1.2",
     "sequelize": "^6.6.5"
   },
   "devDependencies": {

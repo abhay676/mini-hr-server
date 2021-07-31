@@ -18,4 +18,7 @@ export const environment = {
   JWT_SECRET: process.env.JWT_SECRET,
   IMAGEKIT_PUBLIC_KEY: process.env.IMAGEKIT_PUBLIC_KEY,
   IMAGEKIT_PRIVATE_KEY: process.env.IMAGEKIT_PRIVATE_KEY,
+  REDIS_HOST: process.env.REDIS_HOST,
+  REDIS_PORT: process.env.REDIS_PORT,
+  REDIS_PWD: process.env.REDIS_PWD,
 };

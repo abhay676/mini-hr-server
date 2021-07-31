@@ -39,27 +39,6 @@ export const UserService = {
       throw error;
     }
   },
-  async saveOTP(otpData) {
-    try {
-      const otp = await db.OTP.create(otpData);
-      return otp;
-    } catch (error) {
-      const key = Object.keys(error.fields);
-      throw new Error(`${key[0]} already exists`);
-    }
-  },
-  async validateOTP(OTP) {
-    try {
-      const isValid = await db.OTP.findOne({
-        where: {
-          OTP,
-        },
-      });
-      return isValid === null ? false : true;
-    } catch (error) {
-      console.log(error);
-    }
-  },
 
   async getDashboard(email) {
     try {

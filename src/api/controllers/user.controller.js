@@ -1,10 +1,23 @@
 import { validationResult } from 'express-validator';
+import redis from 'redis';
 import moment from 'moment';
 import OTPGenerator from 'otp-generator';
+import { environment } from '../../config/environment.js';
 import { UserService } from '../services/user.service.js';
 import { CompanyService } from '../services/company.service.js';
 import { sendResponse } from '../utils/Response.js';
 import { publishMessage, consumeMessage } from '../utils/emailWorker.js';
+
+const client = redis.createClient({
+  host: environment.REDIS_HOST,
+  port: environment.REDIS_PORT,
+  password: environment.REDIS_PWD,
+});
+
+client.on('connect', () => {
+  console.log('Connected to our redis instance!');
+});
+
 export const userAuth = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -14,15 +27,6 @@ export const userAuth = async (req, res, next) => {
     const { email } = req.body;
     // check for email existence
     const isUserExists = await UserService.findUserByEmail(email);
-    if (isUserExists) {
-      return sendResponse(
-        res,
-        409,
-        'user already exists with same email',
-        null,
-        [{ email }]
-      );
-    }
     // generate OTP and send to mail queue
     const OTP = await OTPGenerator.generate(6, {
       digits: true,
@@ -30,17 +34,25 @@ export const userAuth = async (req, res, next) => {
       specialChars: false,
       upperCase: false,
     });
+
     const emailOptions = {
       OTP,
       email,
+      isNew: true,
     };
-    // save OTP to DB
-    await UserService.saveOTP(emailOptions);
 
-    publishMessage(emailOptions);
+    if (isUserExists) {
+      emailOptions.isNew = false;
+    }
 
-    // TODO: Temp. solution
-    // consume queue
+    // save OTP to Redis
+    const saved = await client.setex(OTP, 300, JSON.stringify(emailOptions));
+    if (saved) {
+      // TODO: Temp. solution
+      // consume queue
+      publishMessage(emailOptions);
+    }
+
     consumeMessage();
 
     return sendResponse(res, 201, 'OTP send successfully', req.body, null);
@@ -57,15 +69,29 @@ export const validateOTP = async (req, res, next) => {
       return sendResponse(res, 400, 'Validation error', null, errors.array());
     }
     const { OTP } = req.body;
-    const isOTPValid = await UserService.validateOTP(OTP);
-    if (!isOTPValid) {
-      return sendResponse(res, 409, 'OTP is not valid', null, [{ OTP }]);
-    }
-    const dataObj = {
-      isVerified: true,
-      verifiedAt: moment().format('MMMM Do YYYY, h:mm:ss a'),
-    };
-    return sendResponse(res, 200, 'OTP validated successfully', dataObj, null);
+    // validate OTP from Redis
+    client.get(OTP, async (err, data) => {
+      if (err)
+        return sendResponse(res, 409, 'OTP is not valid', null, [{ OTP }]);
+      const userData = JSON.parse(data);
+      const dataObj = {
+        isVerified: true,
+        verifiedAt: moment().format('MMMM Do YYYY, h:mm:ss a'),
+        isNew: userData.isNew ? userData.isNew : false,
+      };
+      // Delete OTP key
+      if (!userData.isNew) {
+        const token = await UserService.generateAuthToken(userData.email);
+        dataObj['authToken'] = token;
+      }
+      return sendResponse(
+        res,
+        200,
+        'OTP validated successfully',
+        dataObj,
+        null
+      );
+    });
   } catch (error) {
     next(error);
   }
