@@ -8,6 +8,7 @@ import { CompanyService } from '../services/company.service.js';
 import { sendResponse } from '../utils/Response.js';
 import { publishMessage, consumeMessage } from '../utils/emailWorker.js';
 
+
 const client = redis.createClient({
   host: environment.REDIS_HOST,
   port: environment.REDIS_PORT,
@@ -73,24 +74,29 @@ export const validateOTP = async (req, res, next) => {
     client.get(OTP, async (err, data) => {
       if (err)
         return sendResponse(res, 409, 'OTP is not valid', null, [{ OTP }]);
-      const userData = JSON.parse(data);
-      const dataObj = {
-        isVerified: true,
-        verifiedAt: moment().format('MMMM Do YYYY, h:mm:ss a'),
-        isNew: userData.isNew ? userData.isNew : false,
-      };
-      // Delete OTP key
-      if (!userData.isNew) {
-        const token = await UserService.generateAuthToken(userData.email);
-        dataObj['authToken'] = token;
+      if (data) {
+        const userData = JSON.parse(data);
+        const dataObj = {
+          isVerified: true,
+          verifiedAt: moment().format('MMMM Do YYYY, h:mm:ss a'),
+          isNew: userData.isNew ? userData.isNew : false,
+        };
+        // Delete OTP key
+        if (!userData.isNew) {
+          dataObj['user'] = await UserService.findUserByEmail(userData.email);
+        }
+        return sendResponse(
+          res,
+          200,
+          'OTP validated successfully',
+          dataObj,
+          null
+        );
+      } else {
+        return sendResponse(res, 404, 'OTP Invalid', null, [
+          { OTP: 'invalid' },
+        ]);
       }
-      return sendResponse(
-        res,
-        200,
-        'OTP validated successfully',
-        dataObj,
-        null
-      );
     });
   } catch (error) {
     next(error);
