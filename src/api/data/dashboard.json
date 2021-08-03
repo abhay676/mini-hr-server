@@ -8,8 +8,9 @@
         "Post on various job boards",
         "Share on social networks"
       ],
+      "isNewJob": true,
       "buttonText": "CREATE JOB OPENING",
-      "route": "/job/new"
+      "route": "/openings"
     },
     {
       "heading": "Add Candidates",
