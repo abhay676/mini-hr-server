@@ -38,25 +38,13 @@ export const Job = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      htmlDescription: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
       requirements: {
         type: DataTypes.TEXT,
         allowNull: false,
       },
-      htmlRequirements: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-      },
       benefits: {
         type: DataTypes.TEXT,
         allowNull: false,
-      },
-      htmlBenefits: {
-        type: DataTypes.TEXT,
-        allowNull: true,
       },
       minEquity: {
         type: DataTypes.INTEGER,
