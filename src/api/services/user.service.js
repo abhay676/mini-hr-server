@@ -87,4 +87,20 @@ export const UserService = {
       throw error;
     }
   },
+  async updateUserToken(token, email) {
+    try {
+      const updated = await db.User.update(
+        { authToken: token },
+        {
+          where: {
+            email,
+          },
+        }
+      );
+      console.log(updated);
+      return updated;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

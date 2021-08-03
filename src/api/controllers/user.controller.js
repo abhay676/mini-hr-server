@@ -8,7 +8,6 @@ import { CompanyService } from '../services/company.service.js';
 import { sendResponse } from '../utils/Response.js';
 import { publishMessage, consumeMessage } from '../utils/emailWorker.js';
 
-
 const client = redis.createClient({
   host: environment.REDIS_HOST,
   port: environment.REDIS_PORT,
@@ -83,6 +82,15 @@ export const validateOTP = async (req, res, next) => {
         };
         // Delete OTP key
         if (!userData.isNew) {
+          // generate new auth token
+          const token = await UserService.generateAuthToken({
+            email: userData.email,
+          });
+          // update user
+          const user = await UserService.updateUserToken(token, userData.email);
+          if (user) {
+            console.log('UPDATED');
+          }
           dataObj['user'] = await UserService.findUserByEmail(userData.email);
         }
         return sendResponse(
